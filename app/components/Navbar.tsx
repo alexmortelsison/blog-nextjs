@@ -8,7 +8,7 @@ export default async function Navbar() {
   const session = await getServerSession(authOptions);
   return (
     <div className="flex justify-between items-center border-b p-4 lg:max-w-6xl mx-auto">
-      <h1 className="text-lg font-mono">social.</h1>
+      <h1 className="text-lg font-mono tracking-wide font-bold">social.</h1>
       <div className="flex items-center gap-x-2">
         {!session ? <SigninButton /> : <UserDropdownMenu />}
         <img
