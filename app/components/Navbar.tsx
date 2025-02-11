@@ -9,7 +9,7 @@ export default async function Navbar() {
   return (
     <div className="flex justify-between items-center border-b p-4 lg:max-w-6xl mx-auto">
       <h1 className="text-lg font-mono tracking-wide font-bold">social.</h1>
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-center gap-x-2 border px-4 py-2 rounded-full">
         {!session ? <SigninButton /> : <UserDropdownMenu />}
         <img
           src={
