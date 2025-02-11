@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {
-    throw new Error("Unanuthorized");
+    throw new Error("Unauthorized.");
   }
 
   const { title, overview, description, image } = await req.json();
@@ -42,7 +42,6 @@ export async function POST(req: NextRequest) {
     },
   });
   console.log("Blog created:", blog);
-
   return NextResponse.redirect("http://localhost:3000");
 }
 
@@ -61,7 +60,7 @@ export async function GET() {
         createdAt: "desc",
       },
     });
-
+    console.log("🟢 Debug: Blogs Found Without Relations:", blogs);
     return NextResponse.json(blogs, { status: 200 });
   } catch (error) {
     console.error("Error fetching blogs:", error);
