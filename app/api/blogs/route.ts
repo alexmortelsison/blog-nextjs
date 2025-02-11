@@ -1,31 +1,33 @@
-import { NextRequest } from "next/server";
+import { authOptions } from "@/app/utils/auth";
 import { prisma } from "@/app/utils/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/utils/auth";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized.");
   }
 
   const { title, overview, description, image } = await req.json();
 
   if (!title || !overview || !description || !image) {
-    throw new Error("All fields are required");
+    throw new Error("All fields are required!");
   }
 
   let user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: {
+      email: session.user.email,
+    },
   });
 
   if (!user) {
     user = await prisma.user.create({
       data: {
         email: session.user.email,
-        name: session.user.name ?? "",
-        image: session.user.image ?? "",
+        name: session.user.name,
+        image: session.user.image,
       },
     });
   }
@@ -39,6 +41,7 @@ export async function POST(req: NextRequest) {
       authorId: user.id,
     },
   });
+  console.log("Blog created:", blog);
 
-  return Response.json(blog, { status: 201 });
+  return NextResponse.redirect("http://localhost:3000");
 }
