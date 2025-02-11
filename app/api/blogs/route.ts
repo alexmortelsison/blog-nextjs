@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {
-    throw new Error("Unauthorized.");
+    throw new Error("Unanuthorized");
   }
 
   const { title, overview, description, image } = await req.json();
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
   if (!user) {
     user = await prisma.user.create({
       data: {
-        email: session.user.email,
         name: session.user.name,
+        email: session.user.email,
         image: session.user.image,
       },
     });
@@ -44,4 +44,30 @@ export async function POST(req: NextRequest) {
   console.log("Blog created:", blog);
 
   return NextResponse.redirect("http://localhost:3000");
+}
+
+export async function GET() {
+  try {
+    const blogs = await prisma.blog.findMany({
+      include: {
+        author: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json(blogs, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch blogs" },
+      { status: 500 }
+    );
+  }
 }
