@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea"; // ✅ Added for description
 import { toast } from "sonner";
 
 export default function CreateBlog() {
@@ -20,7 +19,7 @@ export default function CreateBlog() {
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Fixed: Each function updates the correct state
+  // Handle Input Changes
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
   };
@@ -39,13 +38,16 @@ export default function CreateBlog() {
     }
   };
 
+  // Handle Form Submission
   const handleSubmit = async () => {
     if (!title || !overview || !description || !image) {
       toast.error("All fields are required!");
       return;
     }
+
     setLoading(true);
 
+    // Create FormData
     const formData = new FormData();
     formData.append("title", title);
     formData.append("overview", overview);
@@ -57,6 +59,7 @@ export default function CreateBlog() {
         method: "POST",
         body: formData,
       });
+
       if (response.ok) {
         toast.success("Blog created successfully!");
         setTitle("");
@@ -68,7 +71,7 @@ export default function CreateBlog() {
       }
     } catch (error) {
       console.error("Error submitting blog:", error);
-      toast.error("Something went wrong");
+      toast.error("Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -94,8 +97,8 @@ export default function CreateBlog() {
         </DialogTitle>
         <DialogTitle className="pt-4">
           <p className="pb-4">Description</p>
-          <Textarea
-            className="h-[150px] w-full"
+          <textarea
+            className="h-[300px] w-full border p-2 rounded"
             value={description}
             onChange={handleDescriptionChange}
           />
@@ -104,15 +107,9 @@ export default function CreateBlog() {
           <p className="pb-4">Image</p>
           <Input type="file" onChange={handleImageChange} />
         </DialogTitle>
-
-        {/* ✅ Fixed: Calls handleSubmit on click */}
         <div className="flex justify-end pt-4">
-          <Button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="font-semibold"
-          >
-            {loading ? "Publishing..." : "Submit"}
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Submitting..." : "Submit"}
           </Button>
         </div>
       </DialogContent>
