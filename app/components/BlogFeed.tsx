@@ -21,7 +21,7 @@ export default function BlogFeed({ refresh }: { refresh: boolean }) {
 
   useEffect(() => {
     fetchBlogs();
-  }, [refresh]); // Re-fetch when `refresh` changes
+  }, [refresh]);
 
   return (
     <div className="max-w-4xl mx-auto mt-6">

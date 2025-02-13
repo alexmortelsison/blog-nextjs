@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ export default function CreateBlog({
   const [title, setTitle] = useState("");
   const [overview, setOverview] = useState("");
   const [description, setDescription] = useState("");
-  const [open, setOpen] = useState(false); // Track modal state
+  const [open, setOpen] = useState(false);
 
   const resetForm = () => {
     setFile(null);
@@ -81,8 +82,8 @@ export default function CreateBlog({
       if (!response.ok) throw new Error("Failed to create blog");
 
       alert("Blog created successfully!");
-      refreshBlogs(); // ✅ Refresh blogs
-      resetForm(); // ✅ Reset form
+      refreshBlogs(); 
+      resetForm(); 
     } catch (error) {
       console.error("❌ Error submitting blog:", error);
     }

@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Blog from "@/app/models/Blog";
 
-interface Blog {
-  id: string;
-  title: string;
-  overview: string;
-  description: string;
-  imageUrl: string;
-}
-
-// eslint-disable-next-line prefer-const
-let blogs: Blog[] = []; // ✅ Using let for modification
-
+// ✅ Fetch all blogs
 export async function GET() {
-  return NextResponse.json(blogs);
+  try {
+    await connectDB();
+    const blogs = await Blog.find().sort({ createdAt: -1 });
+    return NextResponse.json(blogs);
+  } catch (error) {
+    console.error("❌ Error fetching blogs:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch blogs" },
+      { status: 500 }
+    );
+  }
 }
 
+// ✅ Create a new blog
 export async function POST(req: Request) {
   try {
     const { title, overview, description, imageUrl } = await req.json();
@@ -26,15 +29,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const newBlog: Blog = {
-      id: Date.now().toString(),
+    await connectDB();
+    const newBlog = await Blog.create({
       title,
       overview,
       description,
       imageUrl,
-    };
-
-    blogs.push(newBlog); // ✅ Modifying the array
+    });
 
     return NextResponse.json(newBlog, { status: 201 });
   } catch (error) {
