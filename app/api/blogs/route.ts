@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Blog from "@/app/models/Blog";
 
-// ✅ Fetch all blogs
 export async function GET() {
   try {
     await connectDB();
@@ -17,7 +16,6 @@ export async function GET() {
   }
 }
 
-// ✅ Create a new blog
 export async function POST(req: Request) {
   try {
     const { title, overview, description, imageUrl } = await req.json();
