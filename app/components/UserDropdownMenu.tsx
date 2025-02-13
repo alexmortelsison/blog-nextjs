@@ -1,3 +1,4 @@
+"use client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,8 +9,11 @@ import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 import SignoutButton from "./SignoutButton";
 import { Separator } from "@/components/ui/separator";
+import SigninButton from "./SigninButton";
+import { useSession } from "next-auth/react";
 
-export default async function UserDropdownMenu() {
+export default function UserDropdownMenu() {
+  const { data: session } = useSession();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -29,7 +33,7 @@ export default async function UserDropdownMenu() {
         </DropdownMenuItem>
         <Separator className="my-2" />
         <DropdownMenuItem className="flex justify-center pt-4">
-          <SignoutButton />
+          {!session ? <SigninButton /> : <SignoutButton />}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

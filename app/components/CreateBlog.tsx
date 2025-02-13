@@ -4,114 +4,127 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
+  DialogFooter,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
-export default function CreateBlog() {
+export default function CreateBlog({
+  refreshBlogs,
+}: {
+  refreshBlogs: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [overview, setOverview] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false); // Track modal state
 
-  // Handle Input Changes
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
-  };
-  const handleOverviewChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setOverview(e.target.value);
-  };
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setDescription(e.target.value);
-  };
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImage(file);
-    }
+  const resetForm = () => {
+    setFile(null);
+    setFileUrl(null);
+    setTitle("");
+    setOverview("");
+    setDescription("");
+    setOpen(false);
   };
 
-  // Handle Form Submission
-  const handleSubmit = async () => {
-    if (!title || !overview || !description || !image) {
-      toast.error("All fields are required!");
-      return;
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setFile(e.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file) return alert("Please select a file");
 
     setLoading(true);
-
-    // Create FormData
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("overview", overview);
-    formData.append("description", description);
-    formData.append("image", image);
+    formData.append("file", file);
 
     try {
-      const response = await fetch("/api/blogs", {
+      const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Upload failed");
 
-      if (response.ok) {
-        toast.success("Blog created successfully!");
-        setTitle("");
-        setOverview("");
-        setDescription("");
-        setImage(null);
-      } else {
-        toast.error("Failed to create blog.");
-      }
+      setFileUrl(data.fileUrl);
     } catch (error) {
-      console.error("Error submitting blog:", error);
-      toast.error("Something went wrong.");
+      console.error("❌ Upload error:", error);
+      alert("Failed to upload file.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSubmit = async () => {
+    if (!title || !overview || !description || !fileUrl) {
+      return alert("All fields are required!");
+    }
+
+    try {
+      const response = await fetch("/api/blogs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          overview,
+          description,
+          imageUrl: fileUrl,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to create blog");
+
+      alert("Blog created successfully!");
+      refreshBlogs(); // ✅ Refresh blogs
+      resetForm(); // ✅ Reset form
+    } catch (error) {
+      console.error("❌ Error submitting blog:", error);
+    }
+  };
+
   return (
-    <Dialog>
-      <DialogTrigger>
-        <Button className="font-semibold">Create a blog +</Button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Create Blog +</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader className="flex justify-center items-center font-bold text-xl pb-4">
-          Write your blog
-        </DialogHeader>
-        <Separator />
         <DialogTitle>
-          <p className="pb-4">Title</p>
-          <Input value={title} onChange={handleTitleChange} />
-        </DialogTitle>
-        <DialogTitle className="pt-4">
-          <p className="pb-4">Overview</p>
-          <Input value={overview} onChange={handleOverviewChange} />
-        </DialogTitle>
-        <DialogTitle className="pt-4">
-          <p className="pb-4">Description</p>
-          <textarea
-            className="h-[300px] w-full border p-2 rounded"
-            value={description}
-            onChange={handleDescriptionChange}
+          <p>Title</p>
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          <p>Overview</p>
+          <Input
+            value={overview}
+            onChange={(e) => setOverview(e.target.value)}
           />
+          <p>Description</p>
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <p>Image</p>
+          <Input type="file" accept="image/*" onChange={handleFileChange} />
+          {fileUrl && (
+            <img
+              src={fileUrl}
+              alt="Uploaded"
+              className="w-32 h-32 object-cover mt-2"
+            />
+          )}
         </DialogTitle>
-        <DialogTitle className="pt-4">
-          <p className="pb-4">Image</p>
-          <Input type="file" onChange={handleImageChange} />
-        </DialogTitle>
-        <div className="flex justify-end pt-4">
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Submitting..." : "Submit"}
+        <DialogFooter>
+          <Button onClick={handleUpload} disabled={loading}>
+            {loading ? "Uploading..." : "Upload Image"}
           </Button>
-        </div>
+          <Button onClick={handleSubmit} disabled={!fileUrl}>
+            Submit
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
